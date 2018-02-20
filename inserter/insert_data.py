@@ -6,6 +6,7 @@ class SQLDataInserter:
     conn = None
     table_name = None
     column_order = None
+    last_rec_id = 0
 
     def __init__(self):
         pass
@@ -13,12 +14,14 @@ class SQLDataInserter:
         insert_stmt = 'insert into '+self.table_name+' values ('
 
         for row_json in rows_json:
+            self.last_rec_id += 1
+            row_json['id'] = self.last_rec_id
+
             ordered_column_data = []
             for c in self.column_order:
                 val = "'"+str(row_json[c])+"'"
                 ordered_column_data.append(val)
             insert_stmt_loop = insert_stmt + ",".join(ordered_column_data)+")"
-            print(insert_stmt_loop)
 
             cur = self.conn.cursor()
             cur.execute(insert_stmt_loop)
@@ -41,6 +44,14 @@ class MySQLInserter(SQLDataInserter):
         self.conn = mysql.connector.connect(user=username, password=password, database=db, host=host)
         self.table_name = table_name
         self.column_order = column_order
+
+        check_stmt = 'select max(id) from '+self.table_name
+        cur = self.conn.cursor()
+        cur.execute(check_stmt)
+        try:
+            self.last_rec_id = int(cur.fetchone()[0])
+        except TypeError:
+            self.last_rec_id = 0
 
     def insert_rows(self, rows_json):
         SQLDataInserter.insert_rows(self, rows_json)

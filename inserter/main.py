@@ -4,7 +4,7 @@ import sys
 sys.path.append('../datagen')
 from datagen import POSDataGenerator
 
-num_rows = sys.argv[1]
+num_rows = int(sys.argv[1])
 
 f = open('mysql.passwd')
 
@@ -17,8 +17,8 @@ gen = POSDataGenerator()
 rows = []
 while num_rows > 0:
     rows.append(gen.gen_row())
+    num_rows -= 1
 
-    if nuw_rows % 1000 == 0:
+    if num_rows % 1000 == 0:
         ins.insert_rows(rows)
         rows = []
-    num_rows -= 1

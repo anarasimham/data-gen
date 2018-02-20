@@ -2,11 +2,9 @@ import random
 from datetime import datetime
 
 class DataGenerator:
-    rec_id = 0
     def __init__(self):
         pass
     def gen_row(self):
-        self.rec_id += 1
         pass
 
 class POSDataGenerator(DataGenerator):
@@ -15,7 +13,6 @@ class POSDataGenerator(DataGenerator):
     def gen_row(self):
         DataGenerator.gen_row(self)
         row = {}
-        row['id'] = self.rec_id
         row['trxn_time'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
         row['cust_id'] = random.randrange(1101)%1000+1
@@ -55,7 +52,6 @@ class ManufacturingDataGenerator(DataGenerator):
         row = {}
 
         name_obj = self.name_to_notes[random.randrange(len(self.name_to_notes))]
-        row['id'] = self.rec_id
         row['shortname'] = name_obj['name']
         row['notes'] = name_obj['notes']
         row['loc'] = random.randrange(1,10)

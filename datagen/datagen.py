@@ -53,8 +53,9 @@ class ManufacturingDataGenerator(DataGenerator):
 
         name_obj = self.name_to_notes[random.randrange(len(self.name_to_notes))]
         row['shortname'] = name_obj['name']
+        row['time'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         row['notes'] = name_obj['notes']
-        row['loc'] = random.randrange(1,10)
+        row['part_loc'] = random.randrange(1,10)
         row['vibr_tolr_pct'] = random.gauss(name_obj['vibr_dist_center'], name_obj['vibr_thrs']/4)
         row['vibr_tolr_thrs'] = name_obj['vibr_dist_center']-name_obj['vibr_thrs']
         row['heat_tolr_pct'] = random.gauss(name_obj['heat_dist_center'], name_obj['heat_thrs']/4)

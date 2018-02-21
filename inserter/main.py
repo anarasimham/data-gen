@@ -1,5 +1,7 @@
 from insert_data import MySQLInserter
 import sys
+import time
+import random
 
 sys.path.append('../datagen')
 from datagen import POSDataGenerator
@@ -18,7 +20,9 @@ rows = []
 while num_rows > 0:
     rows.append(gen.gen_row())
     num_rows -= 1
+    time.sleep(random.random()/10)
+    print(num_rows)
 
-    if num_rows % 1000 == 0:
+    if num_rows % 100 == 0:
         ins.insert_rows(rows)
         rows = []

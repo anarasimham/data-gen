@@ -7,7 +7,7 @@ This can be used to generate two different types of data
 To get started:
 - Configure a MySQL database and allow remote connections
 - Create the desired type of table using one of the scripts in the `mysql/` folder using the user and database you plan on connecting to
-- Copy the `datagen/mysql.passwd.template` into a `datagen/mysql.passwd` file and edit to provide the correct information
+- Copy the `inserter/mysql.passwd.template` into a `inserter/mysql.passwd` file and edit to provide the correct information
 - Test it out by executing `python main_manf.py 10` from the `datagen` folder, where 10 is the desired number of records to be inserted into the MySQL table
 - `main_pos.py` will work as well, generating different data
 

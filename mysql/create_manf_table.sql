@@ -1,0 +1,1 @@
+create table part_dashboard (time datetime(3), id int, shortname varchar(30), notes varchar(150), part_loc int, vibr_tolr_pct double, vibr_tolr_thrs double, heat_tolr_pct double, heat_tolr_thrs double, qty int);

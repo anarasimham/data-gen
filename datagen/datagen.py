@@ -65,9 +65,9 @@ class ManufacturingDataGenerator(DataGenerator):
 
 
 if __name__ == '__main__':
-    d = POSDataGenerator()
-    for i in range(1,10):
-        print(d.gen_row())
+    #d = POSDataGenerator()
+    #for i in range(1,10):
+    #    print(d.gen_row())
     e = ManufacturingDataGenerator()
     for i in range(1,10):
         print(e.gen_row())

@@ -17,7 +17,7 @@ ins = MySQLInserter(host, port, username, password, db, table ,
 gen = ManufacturingDataGenerator()
 
 rows = []
-while num_rows > 0:
+while num_rows != 0:
     rows.append(gen.gen_row())
     num_rows -= 1
     time.sleep(random.random()/10)

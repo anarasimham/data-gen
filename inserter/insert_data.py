@@ -2,6 +2,9 @@ import pyhs2
 import mysql.connector
 import sys
 
+sys.path.append('../datagen')
+from datagen import ManufacturingDataGenerator
+
 class SQLDataInserter:
     conn = None
     table_name = None
@@ -25,7 +28,6 @@ class SQLDataInserter:
 
             cur = self.conn.cursor()
             cur.execute(insert_stmt_loop)
-        self.conn.commit()
         cur.close()
 
 class HiveInserter(SQLDataInserter):
@@ -55,3 +57,12 @@ class MySQLInserter(SQLDataInserter):
 
     def insert_rows(self, rows_json):
         SQLDataInserter.insert_rows(self, rows_json)
+
+if __name__ == '__main__':
+    ins = HiveInserter('<HOSTNAME>', 10500, 'admin', 'admin', 'default', 'partsdata',
+            ['time','id','shortname','notes','part_loc','vibr_tolr_pct','vibr_tolr_thrs','heat_tolr_pct','heat_tolr_thrs','qty'])
+    gen = ManufacturingDataGenerator()
+    rows = []
+    for i in range(10):
+        rows.append(gen.gen_row())
+    ins.insert_rows(rows)

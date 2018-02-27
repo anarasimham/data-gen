@@ -38,6 +38,6 @@ while num_rows != 0:
     time.sleep(random.random())
     print(num_rows)
 
-    if num_rows % 100 == 0:
+    if num_rows % 10 == 0:
         ins.insert_rows(rows)
         rows = []

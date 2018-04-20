@@ -1,11 +1,29 @@
 import random
 from datetime import datetime
+from faker import Faker
 
 class DataGenerator:
     def __init__(self):
         pass
     def gen_row(self):
         pass
+
+class CustomerDataGenerator(DataGenerator):
+    fake = None
+    def __init__(self):
+        self.fake = Faker()
+
+    def gen_row(self):
+        DataGenerator.gen_row(self)
+        row = {}
+        row['contact_name'] = self.fake.name()
+        row['ssn'] = self.fake.ssn().replace('-','')
+        row['date_reg'] = str(self.fake
+            .date_this_decade(before_today=True, after_today=False))
+        row['is_active'] = random.random() > .2
+        row['address'] = self.fake.address()
+        row['company_name'] = self.fake.company()
+        return row
 
 class POSDataGenerator(DataGenerator):
     discounts = [5,10,15,20,25]
@@ -68,6 +86,9 @@ if __name__ == '__main__':
     #d = POSDataGenerator()
     #for i in range(1,10):
     #    print(d.gen_row())
-    e = ManufacturingDataGenerator()
+    #e = ManufacturingDataGenerator()
+    #for i in range(1,10):
+    #    print(e.gen_row())
+    c = CustomerDataGenerator()
     for i in range(1,10):
-        print(e.gen_row())
+        print(c.gen_row())

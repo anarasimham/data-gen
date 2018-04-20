@@ -1,5 +1,5 @@
 host
-port
+port(10500)
 username
 password
 database

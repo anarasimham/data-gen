@@ -20,8 +20,8 @@ class CustomerDataGenerator(DataGenerator):
         row['ssn'] = self.fake.ssn().replace('-','')
         row['date_reg'] = str(self.fake
             .date_this_decade(before_today=True, after_today=False))
-        row['is_active'] = random.random() > .2
-        row['address'] = self.fake.address()
+        row['is_active'] = 1 if random.random() > .2 else 0
+        row['address'] = self.fake.address().replace('\n',', ')
         row['company_name'] = self.fake.company()
         return row
 

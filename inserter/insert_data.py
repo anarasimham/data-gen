@@ -13,7 +13,7 @@ class SQLDataInserter:
 
     def __init__(self):
         pass
-    def insert_rows(self, rows_json):
+    def insert_rows(self, rows_json, do_commit):
         insert_stmt = 'insert into '+self.table_name+' values ('
 
         for row_json in rows_json:
@@ -28,6 +28,8 @@ class SQLDataInserter:
 
             cur = self.conn.cursor()
             cur.execute(insert_stmt_loop)
+        if do_commit:
+            self.conn.commit()
         cur.close()
 
 class HiveInserter(SQLDataInserter):
@@ -39,7 +41,7 @@ class HiveInserter(SQLDataInserter):
         self.column_order = column_order
 
     def insert_rows(self, rows_json):
-        SQLDataInserter.insert_rows(self, rows_json)
+        SQLDataInserter.insert_rows(self, rows_json, False)
 
 class MySQLInserter(SQLDataInserter):
     def __init__(self, host, port, username, password, db, table_name, column_order):
@@ -56,7 +58,7 @@ class MySQLInserter(SQLDataInserter):
             self.last_rec_id = 0
 
     def insert_rows(self, rows_json):
-        SQLDataInserter.insert_rows(self, rows_json)
+        SQLDataInserter.insert_rows(self, rows_json, True)
 
 if __name__ == '__main__':
     ins = HiveInserter('<HOSTNAME>', 10500, 'admin', 'admin', 'default', 'partsdata',

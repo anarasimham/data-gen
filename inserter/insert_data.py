@@ -80,7 +80,6 @@ class CSVInserter(DataInserter):
 
     def insert_rows(self, rows_json):
         ins_arr = []
-        print(rows_json)
         for row_json in rows_json:
             row_json = super(CSVInserter, self).insert_rows_helper(row_json)
             for c in self.column_order:

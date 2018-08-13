@@ -17,11 +17,12 @@ data_dest = sys.argv[2]
 
 if data_dest == 'hive':
     filename = 'hive.passwd'
-else:
+elif data_dest == 'mysql':
     filename = 'mysql.passwd'
 
-f = open(filename)
-host,port,username,password,db,table = f.read().splitlines()
+if data_dest == 'hive' or data_dest == 'mysql':
+    f = open(filename)
+    host,port,username,password,db,table = f.read().splitlines()
 
 column_order = ['id','cust_contact_name', 'cust_ssn', 'cust_date_reg', 'cust_is_active', 'cust_address', 'cust_company_name','trxn_time','trxn_amt','discount_amt','store_id','rep_id','part_sku','qty']
 if data_dest == 'hive':

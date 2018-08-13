@@ -11,6 +11,7 @@ if len(sys.argv) < 3:
     print('Please provide 2 arguments, first is number of records, second is hive or mysql for db to insert into')
     sys.exit(1)
 
+num_rows = int(sys.argv[1])
 hive_or_mysql = sys.argv[2]
 
 if hive_or_mysql == 'hive':

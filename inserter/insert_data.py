@@ -1,11 +1,23 @@
 import pyhs2
 import mysql.connector
 import sys
+import csv
 
 sys.path.append('../datagen')
 from datagen import ManufacturingDataGenerator
 
-class SQLDataInserter:
+class DataInserter(object):
+    last_rec_id = 0
+    def __init__(self):
+        pass
+    def insert_rows(self, rows_json):
+        pass
+    def insert_rows_helper(self, row_json):
+        self.last_rec_id += 1
+        row_json['id'] = self.last_rec_id
+        return row_json
+
+class SQLDataInserter(DataInserter):
     conn = None
     table_name = None
     column_order = None
@@ -17,8 +29,7 @@ class SQLDataInserter:
         insert_stmt = 'insert into '+self.table_name+' values ('
 
         for row_json in rows_json:
-            self.last_rec_id += 1
-            row_json['id'] = self.last_rec_id
+            row_json = super(SQLDataInserter, self).insert_rows_helper(row_json)
 
             ordered_column_data = []
             for c in self.column_order:
@@ -59,6 +70,24 @@ class MySQLInserter(SQLDataInserter):
 
     def insert_rows(self, rows_json):
         SQLDataInserter.insert_rows(self, rows_json, True)
+
+class CSVInserter(DataInserter):
+    def __init__(self, separator, filename, column_order, do_overwrite=None):
+        file_options = 'w' if do_overwrite == True or do_overwrite == None else 'a'
+        self.csvfile = open(filename, file_options)
+        self.writer = csv.writer(self.csvfile, delimiter=separator, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+        self.column_order = column_order
+
+    def insert_rows(self, rows_json):
+        ins_arr = []
+        print(rows_json)
+        for row_json in rows_json:
+            row_json = super(CSVInserter, self).insert_rows_helper(row_json)
+            for c in self.column_order:
+                ins_arr.append(row_json[c])
+            self.writer.writerow(ins_arr)
+    def close(self):
+        self.csvfile.close()
 
 if __name__ == '__main__':
     ins = HiveInserter('<HOSTNAME>', 10500, 'admin', 'admin', 'default', 'partsdata',

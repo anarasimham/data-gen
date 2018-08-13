@@ -16,24 +16,25 @@ class CustomerDataGenerator(DataGenerator):
     def gen_row(self):
         DataGenerator.gen_row(self)
         row = {}
-        row['contact_name'] = self.fake.name()
-        row['ssn'] = self.fake.ssn().replace('-','')
-        row['date_reg'] = str(self.fake
+        row['cust_contact_name'] = self.fake.name()
+        row['cust_ssn'] = self.fake.ssn().replace('-','')
+        row['cust_date_reg'] = str(self.fake
             .date_this_decade(before_today=True, after_today=False))
-        row['is_active'] = 1 if random.random() > .2 else 0
-        row['address'] = self.fake.address().replace('\n',', ')
-        row['company_name'] = self.fake.company()
+        row['cust_is_active'] = 1 if random.random() > .2 else 0
+        row['cust_address'] = self.fake.address().replace('\n',', ')
+        row['cust_company_name'] = self.fake.company()
         return row
 
 class POSDataGenerator(DataGenerator):
     discounts = [5,10,15,20,25]
+    cust_gen = CustomerDataGenerator()
 
     def gen_row(self):
         DataGenerator.gen_row(self)
-        row = {}
+        row = self.cust_gen.gen_row()
         row['trxn_time'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
-        row['cust_id'] = random.randrange(1101)%1000+1
+        #row['cust_id'] = random.randrange(1101)%1000+1
         row['trxn_amt'] = random.randrange(201)+round(random.random(), 2)
         row['discount_amt'] = self.discounts[random.randrange(5)]
         row['store_id'] = random.randrange(101)

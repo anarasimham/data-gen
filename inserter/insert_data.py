@@ -2,6 +2,7 @@ import pyhs2
 import mysql.connector
 import sys
 import csv
+import os
 
 sys.path.append('../datagen')
 from datagen import ManufacturingDataGenerator
@@ -72,11 +73,21 @@ class MySQLInserter(SQLDataInserter):
         SQLDataInserter.insert_rows(self, rows_json, True)
 
 class CSVInserter(DataInserter):
-    def __init__(self, separator, filename, column_order, do_overwrite=None):
-        file_options = 'w' if do_overwrite == True or do_overwrite == None else 'a'
-        self.csvfile = open(filename, file_options)
-        self.writer = csv.writer(self.csvfile, delimiter=separator, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+    def __init__(self, filename, separator, column_order):
+        self.file_count = 0
+        self.filename_base = filename
+        self.separator = separator
+        self.init_file()
         self.column_order = column_order
+
+    def init_file(self):
+        if self.file_count > 0:
+            filename = self.filename_base[0:self.filename_base.index('.')]+'_'+str(self.file_count)+self.filename_base[self.filename_base.index('.'):len(self.filename_base)]
+        else:
+            filename = self.filename_base
+        self.csvfile = open(filename, 'w')
+        self.writer = csv.writer(self.csvfile, delimiter=self.separator, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+        self.file_count += 1
 
     def insert_rows(self, rows_json):
         ins_arr = []
@@ -85,8 +96,10 @@ class CSVInserter(DataInserter):
             for c in self.column_order:
                 ins_arr.append(row_json[c])
             self.writer.writerow(ins_arr)
-    def close(self):
-        self.csvfile.close()
+            if os.path.getsize(self.csvfile.name)/1000/1000 >= 1:
+                self.csvfile.close()
+                self.init_file()
+                
 
 if __name__ == '__main__':
     ins = HiveInserter('<HOSTNAME>', 10500, 'admin', 'admin', 'default', 'partsdata',

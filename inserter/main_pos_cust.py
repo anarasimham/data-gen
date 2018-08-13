@@ -30,7 +30,7 @@ if data_dest == 'hive':
 elif data_dest == 'mysql':
     ins = MySQLInserter(host, port, username, password, db, table , column_order)
 elif data_dest == 'csv':
-    ins = CSVInserter(',', 'pos_cust_data.csv', column_order, True)
+    ins = CSVInserter('pos_cust_data.csv', ',', column_order)
 
 gen = POSDataGenerator()
 

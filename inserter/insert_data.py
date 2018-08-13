@@ -96,9 +96,10 @@ class CSVInserter(DataInserter):
             for c in self.column_order:
                 ins_arr.append(row_json[c])
             self.writer.writerow(ins_arr)
-            if os.path.getsize(self.csvfile.name)/1000/1000 >= 1:
+            if os.path.getsize(self.csvfile.name)/1000/1000/1000 >= 1:
                 self.csvfile.close()
                 self.init_file()
+                print('File count is: '+str(self.file_count))
                 
 
 if __name__ == '__main__':

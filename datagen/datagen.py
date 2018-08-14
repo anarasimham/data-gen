@@ -2,7 +2,19 @@ import random
 from datetime import datetime
 from faker import Faker
 
-class DataGenerator:
+class DataGeneratorFactory(object):
+    def factory(type_str):
+        if type_str == 'customer':
+            return CustomerDataGenerator()
+        elif type_str == 'part_dashboard':
+            return ManufacturingDataGenerator()
+        elif type_str == 'transactions':
+            return POSDataGenerator()
+        elif type_str == 'transactions_customer':
+            return POSCustomerDataGenerator()
+    factory = staticmethod(factory)
+
+class DataGenerator(object):
     def __init__(self):
         pass
     def gen_row(self):
@@ -27,20 +39,26 @@ class CustomerDataGenerator(DataGenerator):
 
 class POSDataGenerator(DataGenerator):
     discounts = [5,10,15,20,25]
-    cust_gen = CustomerDataGenerator()
 
     def gen_row(self):
-        DataGenerator.gen_row(self)
-        row = self.cust_gen.gen_row()
+        row = {}
         row['trxn_time'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-
-        #row['cust_id'] = random.randrange(1101)%1000+1
+        row['cust_id'] = random.randrange(1101)%1000+1
         row['trxn_amt'] = random.randrange(201)+round(random.random(), 2)
         row['discount_amt'] = self.discounts[random.randrange(5)]
         row['store_id'] = random.randrange(101)
         row['rep_id'] = random.randrange(16)
         row['part_sku'] = chr(random.randint(65,91))+'-'+str(random.randint(800,1001))
         row['qty'] = random.randrange(11)
+        return row
+
+class POSCustomerDataGenerator(POSDataGenerator):
+    cust_gen = CustomerDataGenerator()
+
+    def gen_row(self):
+        row = self.cust_gen.gen_row()
+        row.update(super(POSCustomerDataGenerator, self).gen_row())
+        row.pop('cust_id')
         return row
 
 
@@ -90,6 +108,9 @@ if __name__ == '__main__':
     #e = ManufacturingDataGenerator()
     #for i in range(1,10):
     #    print(e.gen_row())
-    c = CustomerDataGenerator()
+    #c = CustomerDataGenerator()
+    #for i in range(1,10):
+    #    print(c.gen_row())
+    p = POSCustomerDataGenerator()
     for i in range(1,10):
-        print(c.gen_row())
+        print(p.gen_row())

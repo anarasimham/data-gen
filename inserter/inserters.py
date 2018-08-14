@@ -8,21 +8,20 @@ sys.path.append('../datagen')
 from datagen import ManufacturingDataGenerator
 
 class DataInserter(object):
-    last_rec_id = 0
+    last_rec_id = 1
     def __init__(self, start_id):
         last_rec_id = start_id
     def insert_rows(self, rows_json):
         pass
     def insert_rows_helper(self, row_json):
-        self.last_rec_id += 1
         row_json['id'] = self.last_rec_id
+        self.last_rec_id += 1
         return row_json
 
 class SQLDataInserter(DataInserter):
     conn = None
     table_name = None
     column_order = None
-    last_rec_id = 0
 
     def __init__(self):
         pass
@@ -67,25 +66,24 @@ class MySQLInserter(SQLDataInserter):
         try:
             self.last_rec_id = int(cur.fetchone()[0])
         except TypeError:
-            self.last_rec_id = 0
+            self.last_rec_id = 1
 
     def insert_rows(self, rows_json):
         SQLDataInserter.insert_rows(self, rows_json, True)
 
 class CSVInserter(DataInserter):
-    def __init__(self, filename, separator, column_order, start_id):
+    def __init__(self, filename, separator, column_order, start_id=None):
         self.file_count = 0
         self.filename_base = filename
         self.separator = separator
         self.init_file()
         self.column_order = column_order
+        if start_id == None:
+            start_id = 0
         super(CSVInserter, self).__init__(start_id)
 
     def init_file(self):
-        if self.file_count > 0:
-            filename = self.filename_base[0:self.filename_base.index('.')]+'_'+str(self.file_count)+self.filename_base[self.filename_base.index('.'):len(self.filename_base)]
-        else:
-            filename = self.filename_base
+        filename = self.filename_base[0:self.filename_base.index('.')]+'_'+str(self.last_rec_id)+self.filename_base[self.filename_base.index('.'):len(self.filename_base)]
         self.csvfile = open(filename, 'w')
         self.writer = csv.writer(self.csvfile, delimiter=self.separator, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
         self.file_count += 1
@@ -98,7 +96,7 @@ class CSVInserter(DataInserter):
             for c in self.column_order:
                 ins_arr.append(row_json[c])
             rows_to_write.append(ins_arr)
-                
+
         self.writer.writerows(rows_to_write)
         if os.path.getsize(self.csvfile.name)/1000/1000/1000 >= 1:
             self.csvfile.close()

@@ -1,4 +1,4 @@
-create table transactions (
+create table transactions_customer (
     id int,
     `cust_contact_name` varchar(50), 
     `cust_ssn` varchar(9), 

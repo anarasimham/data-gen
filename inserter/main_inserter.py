@@ -9,6 +9,8 @@ import os
 sys.path.append('../datagen')
 from datagen import DataGeneratorFactory
 
+start = time.time()
+
 csv_out_dir = 'data_out/'
 
 table_to_columns = {
@@ -25,14 +27,17 @@ table_to_columns = {
 parser = OptionParser(usage='Usage: %prog [options] TABLE_NAME')
 parser.add_option("-n", "--num-records", type="int", dest="num_records", help="write NUM_RECORDS to files", default=100)
 parser.add_option("-d", "--data-destination", dest="data_destination", help="where to write the data to, options are: 'hive', 'mysql', 'csv'", default="csv")
-parser.add_option("-j", "--jobs", type="int", dest="num_jobs", help="how many parallel processes to start", default="1")
+parser.add_option("-j", "--jobs", type="int", dest="num_jobs", help="how many parallel processes to start (only applicable for CSV)", default="1")
 
 
 (options, args) = parser.parse_args()
 
-if len(args) != 1:
+if len(args) != 1 :
     print("Incorrect number of arguments provided - please provide the table name in addition to any flags")
     sys.exit(1)
+if options.num_jobs > 1 and options.data_destination != 'csv':
+    options.num_jobs = 1
+
 table_name = args[0]
 
 if options.data_destination in ('hive','mysql'):
@@ -46,28 +51,53 @@ else:
     print("Invalid table name provided. Choose from one of: ["+', '.join(table_to_columns.keys())+']')
     sys.exit(1)
 
-if options.data_destination == 'hive':
-    ins = HiveInserter(host, port, username, password, db, table , column_order)
-elif options.data_destination == 'mysql':
-    ins = MySQLInserter(host, port, username, password, db, table , column_order)
-elif options.data_destination == 'csv':
-    if not os.path.exists(csv_out_dir):
-        os.makedirs(csv_out_dir)
-    ins = CSVInserter(csv_out_dir+table_name+'.csv', ',', column_order)
+def parallelize(start_id, num_records):
+    if options.data_destination == 'hive':
+        ins = HiveInserter(host, port, username, password, db, table , column_order)
+    elif options.data_destination == 'mysql':
+        ins = MySQLInserter(host, port, username, password, db, table , column_order)
+    elif options.data_destination == 'csv':
+        if not os.path.exists(csv_out_dir):
+            os.makedirs(csv_out_dir)
+        ins = CSVInserter(csv_out_dir+table_name+'.csv', ',', column_order, start_id)
 
-start = time.time()
+    start = time.time()
 
-gen = DataGeneratorFactory.factory(table_name)
+    gen = DataGeneratorFactory.factory(table_name)
 
-rows = []
-while options.num_records > 0:
-    rows.append(gen.gen_row())
-    options.num_records -= 1
-    #time.sleep(random.random()/10)
+    rows = []
+    while num_records > 0:
+        rows.append(gen.gen_row())
+        num_records -= 1
 
-    if options.num_records % 100 == 0:
-        ins.insert_rows(rows)
-        rows = []
+        if num_records % 100 == 0:
+            ins.insert_rows(rows)
+            rows = []
+
+procs = []
+
+per_process_num = options.num_records/options.num_jobs
+
+records_per_proc = [per_process_num] * options.num_jobs
+
+remainder = options.num_records%options.num_jobs
+
+for i in range(len(records_per_proc)):
+    if i < remainder:
+        records_per_proc[i] += 1
+
+curr_id = 1
+for i in range(options.num_jobs):
+    num_records = records_per_proc.pop()
+    print(curr_id)
+    p = Process(target=parallelize, args=(curr_id, num_records))
+    p.start()
+    procs.append(p)
+    curr_id += num_records
+
+
+for p in procs:
+    p.join()
 
 end = time.time()
 print('Total watch time - '+str(end-start)+' seconds')

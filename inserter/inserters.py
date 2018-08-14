@@ -8,9 +8,8 @@ sys.path.append('../datagen')
 from datagen import ManufacturingDataGenerator
 
 class DataInserter(object):
-    last_rec_id = 1
     def __init__(self, start_id):
-        last_rec_id = start_id
+        self.last_rec_id = start_id
     def insert_rows(self, rows_json):
         pass
     def insert_rows_helper(self, row_json):
@@ -73,14 +72,14 @@ class MySQLInserter(SQLDataInserter):
 
 class CSVInserter(DataInserter):
     def __init__(self, filename, separator, column_order, start_id=None):
+        if start_id == None:
+            start_id = 1
+        super(CSVInserter, self).__init__(start_id)
         self.file_count = 0
         self.filename_base = filename
         self.separator = separator
         self.init_file()
         self.column_order = column_order
-        if start_id == None:
-            start_id = 0
-        super(CSVInserter, self).__init__(start_id)
 
     def init_file(self):
         filename = self.filename_base[0:self.filename_base.index('.')]+'_'+str(self.last_rec_id)+self.filename_base[self.filename_base.index('.'):len(self.filename_base)]

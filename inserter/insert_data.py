@@ -9,8 +9,8 @@ from datagen import ManufacturingDataGenerator
 
 class DataInserter(object):
     last_rec_id = 0
-    def __init__(self):
-        pass
+    def __init__(self, start_id):
+        last_rec_id = start_id
     def insert_rows(self, rows_json):
         pass
     def insert_rows_helper(self, row_json):
@@ -73,12 +73,13 @@ class MySQLInserter(SQLDataInserter):
         SQLDataInserter.insert_rows(self, rows_json, True)
 
 class CSVInserter(DataInserter):
-    def __init__(self, filename, separator, column_order):
+    def __init__(self, filename, separator, column_order, start_id):
         self.file_count = 0
         self.filename_base = filename
         self.separator = separator
         self.init_file()
         self.column_order = column_order
+        super(CSVInserter, self).__init__(start_id)
 
     def init_file(self):
         if self.file_count > 0:
@@ -90,17 +91,19 @@ class CSVInserter(DataInserter):
         self.file_count += 1
 
     def insert_rows(self, rows_json):
-        ins_arr = []
+        rows_to_write = []
         for row_json in rows_json:
+            ins_arr = []
             row_json = super(CSVInserter, self).insert_rows_helper(row_json)
             for c in self.column_order:
                 ins_arr.append(row_json[c])
-            self.writer.writerow(ins_arr)
-            if os.path.getsize(self.csvfile.name)/1000/1000/1000 >= 1:
-                self.csvfile.close()
-                self.init_file()
-                print('File count is: '+str(self.file_count))
+            rows_to_write.append(ins_arr)
                 
+        self.writer.writerows(rows_to_write)
+        if os.path.getsize(self.csvfile.name)/1000/1000/1000 >= 1:
+            self.csvfile.close()
+            self.init_file()
+            print('File count is: '+str(self.file_count))
 
 if __name__ == '__main__':
     ins = HiveInserter('<HOSTNAME>', 10500, 'admin', 'admin', 'default', 'partsdata',

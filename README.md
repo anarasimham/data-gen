@@ -19,3 +19,9 @@ nohup python main_manf.py -1 mysql &
 ```
 
 This will generate data at a steady rate until killed.
+
+Notes:
+- On the machine where you install the data-gen repository and want to insert data to MySQL/Hive, you'll need to install the respective Pip packages
+  - Install Pip first
+  - Pyhs2 - must run sudo yum install gcc-c++ python-devel.x86_64 cyrus-sasl-devel.x86_64 cyrus-sasl-gssapi cyrus-sasl-md5 cyrus-sasl-plain as a dependency, then you can run pip install pyhs2
+  - MySQL - must run pip install mysql-connector==2.1.6

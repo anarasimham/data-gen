@@ -8,6 +8,7 @@ import os
 
 sys.path.append('../datagen')
 from datagen import DataGeneratorFactory
+from datagen import rep_count
 
 start = time.time()
 
@@ -21,7 +22,9 @@ table_to_columns = {
     'transactions':
         ['id','trxn_time','cust_id','trxn_amt','discount_amt','store_id','rep_id','part_sku','qty'],
     'transactions_customer':
-        ['id','cust_contact_name', 'cust_ssn', 'cust_date_reg', 'cust_is_active', 'cust_address', 'cust_company_name','trxn_time','trxn_amt','discount_amt','store_id','rep_id','part_sku','qty']
+        ['id','cust_contact_name', 'cust_ssn', 'cust_date_reg', 'cust_is_active', 'cust_address', 'cust_company_name','trxn_time','trxn_amt','discount_amt','store_id','rep_id','part_sku','qty'],
+    'rep':
+        ['id','name','address','salary','quota','start_date']
 }
 
 parser = OptionParser(usage='Usage: %prog [options] TABLE_NAME')
@@ -35,7 +38,8 @@ parser.add_option("-j", "--jobs", type="int", dest="num_jobs", help="how many pa
 if len(args) != 1 :
     print("Incorrect number of arguments provided - please provide the table name in addition to any flags")
     sys.exit(1)
-if options.num_jobs > 1 and options.data_destination != 'csv':
+if (    (options.num_jobs > 1 and options.data_destination != 'csv') or
+        (options.num_jobs > 1 and options.data_destination == 'csv' and args[0] == 'rep') ):
     options.num_jobs = 1
 
 table_name = args[0]
@@ -77,9 +81,9 @@ def parallelize(start_id, num_records):
 procs = []
 
 per_process_num = options.num_records/options.num_jobs
-
+if args[0] == 'rep':
+    per_process_num = rep_count
 records_per_proc = [per_process_num] * options.num_jobs
-
 remainder = options.num_records%options.num_jobs
 
 for i in range(len(records_per_proc)):

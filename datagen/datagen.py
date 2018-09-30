@@ -2,6 +2,8 @@ import random
 from datetime import datetime
 from faker import Faker
 
+rep_count = 16
+
 class DataGeneratorFactory(object):
     def factory(type_str):
         if type_str == 'customer':
@@ -12,6 +14,8 @@ class DataGeneratorFactory(object):
             return POSDataGenerator()
         elif type_str == 'transactions_customer':
             return POSCustomerDataGenerator()
+        elif type_str == 'rep':
+            return SalesRepDataGenerator()
     factory = staticmethod(factory)
 
 class DataGenerator(object):
@@ -26,7 +30,6 @@ class CustomerDataGenerator(DataGenerator):
         self.fake = Faker()
 
     def gen_row(self):
-        DataGenerator.gen_row(self)
         row = {}
         row['cust_contact_name'] = self.fake.name()
         row['cust_ssn'] = self.fake.ssn().replace('-','')
@@ -35,6 +38,30 @@ class CustomerDataGenerator(DataGenerator):
         row['cust_is_active'] = 1 if random.random() > .2 else 0
         row['cust_address'] = self.fake.address().replace('\n',', ')
         row['cust_company_name'] = self.fake.company()
+        return row
+
+class SalesRepDataGenerator(DataGenerator):
+    fake = None
+    reps_left = rep_count
+
+    def __init__(self):
+        self.fake = Faker()
+
+    def gen_row(self):
+        row = {}
+        row['id'] = self.reps_left
+        self.reps_left -= 1
+
+        if self.reps_left == -1:
+            return None
+
+        row['name'] = self.fake.name()
+        row['address'] = self.fake.address().replace('\n',', ')
+        row['salary'] = random.randrange(5,11)*10000
+        row['quota'] = random.randrange(5,11)*100000
+        row['start_date'] = str(self.fake
+            .date_this_decade(before_today=True, after_today=False))
+
         return row
 
 class POSDataGenerator(DataGenerator):
@@ -47,7 +74,7 @@ class POSDataGenerator(DataGenerator):
         row['trxn_amt'] = random.randrange(201)+round(random.random(), 2)
         row['discount_amt'] = self.discounts[random.randrange(5)]
         row['store_id'] = random.randrange(101)
-        row['rep_id'] = random.randrange(16)
+        row['rep_id'] = random.randrange(rep_count)
         row['part_sku'] = chr(random.randint(65,91))+'-'+str(random.randint(800,1001))
         row['qty'] = random.randrange(11)
         return row

@@ -3,14 +3,18 @@ import sys
 import time
 import random
 from multiprocessing import Process
+from multiprocessing import Queue
 from optparse import OptionParser
 import os
+
+from threading import Timer
 
 sys.path.append('../datagen')
 from datagen import DataGeneratorFactory
 from datagen import rep_count
 
 start = time.time()
+checkpoints = [5,10,20,60,600,3600]
 
 csv_out_dir = 'data_out/'
 
@@ -55,7 +59,7 @@ else:
     print("Invalid table name provided. Choose from one of: ["+', '.join(table_to_columns.keys())+']')
     sys.exit(1)
 
-def parallelize(start_id, num_records):
+def parallelize(start_id, num_records, q):
     if options.data_destination == 'hive':
         ins = HiveInserter(host, port, username, password, db, table , column_order)
     elif options.data_destination == 'mysql':
@@ -66,6 +70,12 @@ def parallelize(start_id, num_records):
         ins = CSVInserter(csv_out_dir+table_name+'.csv', ',', column_order, start_id)
 
     start = time.time()
+    start_rec_count = num_records
+    def record_count():
+        q.put(start_rec_count-num_records)
+    for num in checkpoints:
+        t = Timer(num, record_count)
+        t.start()
 
     gen = DataGeneratorFactory.factory(table_name)
 
@@ -91,14 +101,27 @@ for i in range(len(records_per_proc)):
         records_per_proc[i] += 1
 
 curr_id = 1
+q = Queue()
 for i in range(options.num_jobs):
     num_records = records_per_proc.pop()
     print(curr_id)
-    p = Process(target=parallelize, args=(curr_id, num_records))
+    p = Process(target=parallelize, args=(curr_id, num_records, q))
     p.start()
     procs.append(p)
     curr_id += num_records
 
+def printer(elapsed):
+    sum_counts = 0
+    try:
+        while not q.empty():
+            sum_counts = sum_counts + q.get()
+    except Queue.Empty:
+        pass
+    print(str(sum_counts/elapsed) + " per second after " + str(elapsed) + " seconds")
+
+for num in checkpoints:
+    t = Timer(num+3, printer, [num])
+    t.start()
 
 for p in procs:
     p.join()

@@ -14,7 +14,7 @@ from datagen import DataGeneratorFactory
 from datagen import rep_count
 
 start = time.time()
-checkpoints = [5,10,20,60,600,3600]
+checkpoints = []
 
 csv_out_dir = 'data_out/'
 
